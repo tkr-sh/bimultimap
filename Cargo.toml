@@ -1,0 +1,13 @@
+[package]
+name = "bimultimap"
+version = "0.0.1"
+edition = "2024"
+
+[features]
+default = ["hashbrown"]
+hashbrown = ["dep:hashbrown"]
+hashmap = []
+btreemap = []
+
+[dependencies]
+hashbrown = { optional = true, version = "0.15" }
