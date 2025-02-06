@@ -81,6 +81,13 @@ impl<'a, L: Hash + Eq + 'a, R: Hash + Eq + 'a> BiMultiMap<'a, L, R> {
         self.right_map.get(right)
     }
 
+    pub fn get_one_left(&self, left: &L) -> Option<&R> {
+        self.get_left(left).and_then(|rights| rights.iter().next()).map(|v| *v)
+    }
+    pub fn get_one_right(&self, right: &R) -> Option<&L> {
+        self.get_right(right).and_then(|lefts| lefts.iter().next()).map(|v| *v)
+    }
+
     fn get_mut_left(&mut self, left: &L) -> Option<&mut HashSet<&'a R>> {
         self.left_map.get_mut(left)
     }
@@ -90,6 +97,10 @@ impl<'a, L: Hash + Eq + 'a, R: Hash + Eq + 'a> BiMultiMap<'a, L, R> {
 
     pub fn get_left_vec(&self, left: &L) -> Option<Vec<&R>> {
         self.get_left(left)
+            .map(|set| set.iter().map(Deref::deref).collect::<Vec<_>>())
+    }
+    pub fn get_right_vec(&self, right: &R) -> Option<Vec<&L>> {
+        self.get_right(right)
             .map(|set| set.iter().map(Deref::deref).collect::<Vec<_>>())
     }
 
