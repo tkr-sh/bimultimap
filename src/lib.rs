@@ -1,7 +1,11 @@
-use std::{borrow::Borrow, fmt::Debug, hash::Hash, ops::Deref};
+#![feature(coroutines)]
+#![feature(gen_blocks)]
+#![feature(impl_trait_in_assoc_type)]
+
+use std::{hash::Hash, ops::Deref};
 
 #[cfg(feature = "hashbrown")]
-use hashbrown::{hash_map::IntoIter, HashMap, HashSet};
+use hashbrown::{HashMap, HashSet};
 
 #[derive(Default)]
 pub struct BiMultiMap<'a, L: Hash + Eq + 'a, R: Hash + Eq + 'a> {
@@ -11,28 +15,24 @@ pub struct BiMultiMap<'a, L: Hash + Eq + 'a, R: Hash + Eq + 'a> {
     right_map: HashMap<&'a R, HashSet<&'a L>>,
 }
 
-// impl<L: Debug + Hash + Eq, R: Debug + Hash + Eq> Debug for BiMultiMap<L, R> {
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         f.debug_struct(…)
-//     }
-// }
-// impl<L: Hash + std::cmp::Eq + Clone, R: Hash + std::cmp::Eq> Iterator for BiMultiMap<L, R> {
-//     type Item = (L, R);
-//
-//     fn next(&mut self) -> Option<Self::Item> {}
-// }
-// impl<L: Hash + std::cmp::Eq + Clone, R: Hash + std::cmp::Eq> IntoIterator for BiMultiMap<L, R> {
-//     type Item = (L, R);
-//     type IntoIter = Iterator<Item = (L, R)>;
-//     fn into_iter(self) -> Self::IntoIter {
-//         self.left
-//             .into_iter()
-//             .flat_map(|(left, rights)| rights.into_iter().flat_map(|right| (left.clone(), right)))
-//     }
-// }
+impl<'a, L, R> IntoIterator for  BiMultiMap<'a, L, R> 
+    where
+        L: Hash + Eq + 'a + Clone,
+        R: Hash + Eq + 'a + Clone,
+{
+    type Item = (L, R);
+    type IntoIter = impl Iterator<Item = (L, R)>;
 
-// todo:
-// IntoIter, FromIterator
+    fn into_iter(self) -> Self::IntoIter {
+        gen {
+            for (left, rights) in self.left_map {
+                for right in rights {
+                    yield (left.clone(), right.clone());
+                }
+            }
+        }.into_iter()
+    }
+}
 
 impl<'a, L: Hash + Eq + 'a, R: Hash + Eq + 'a> BiMultiMap<'a, L, R> {
     pub fn new() -> BiMultiMap<'a, L, R> {
@@ -42,6 +42,16 @@ impl<'a, L: Hash + Eq + 'a, R: Hash + Eq + 'a> BiMultiMap<'a, L, R> {
             left_map: HashMap::new(),
             right_map: HashMap::new(),
         }
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = (&'a L, &'a R)> {
+        gen {
+            for (left, rights) in self.left_map.iter() {
+                for right in rights {
+                    yield (*left, *right);
+                }
+            }
+        }.into_iter()
     }
 
     /// Inserts a (L, R) in the [BiMultiMap]
