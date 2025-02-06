@@ -107,30 +107,36 @@ impl<'a, L: Hash + Eq + 'a, R: Hash + Eq + 'a> BiMultiMap<'a, L, R> {
     /// Remove an existing mapping between Left and Right.
     ///
     /// Returns whether the mapping was removed.
-    pub fn remove(&mut self, left: &L, right: &R) -> bool {
-        (match self.get_mut_left(&left) {
-            Some(right_set) => {
-                let is_removed = right_set.remove(right);
+    pub fn remove<'x, 'y>(&mut self, left: &'x L, right: &'y R) -> bool
+    where 'x: 'a, 'y: 'a{
+        let can_be_removed = (self.get_left(&left).is_some_and(|right_set| right_set.contains(right))
+        ) && (self.get_right(&right) .is_some_and(|left_set| left_set.contains(left)));
 
-                if is_removed && right_set.is_empty() {
-                    self.left_map.remove(left);
-                }
+        if can_be_removed {
+            let should_remove_left = self.get_mut_left(&left).map(|right_set| {
+                right_set.remove(&right);
+                right_set.is_empty()
+            });
 
-                is_removed
+            if should_remove_left == Some(true) {
+                self.left_map.remove(&left);
+                self.left_values.remove(left);
             }
-            None => return false,
-        }) && (match self.get_mut_right(&right) {
-            Some(left_set) => {
-                let is_removed = left_set.remove(left);
 
-                if is_removed && left_set.is_empty() {
-                    self.right_map.remove(right);
-                }
+            let should_remove_right = self.get_mut_right(&right).map(|left_set| {
+                left_set.remove(&left);
+                left_set.is_empty()
+            });
 
-                is_removed
+            if should_remove_right == Some(true) {
+                self.right_map.remove(&right);
+                self.right_values.remove(right);
             }
-            None => return false,
-        })
+
+            true
+        } else {
+            false
+        }
     }
 
     pub fn remove_left(&mut self, left: &'a L) -> Option<HashSet<&'a R>> {
