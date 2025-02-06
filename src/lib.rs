@@ -143,10 +143,15 @@ impl<'a, L: Hash + Eq + 'a, R: Hash + Eq + 'a> BiMultiMap<'a, L, R> {
                         hashet_left.is_empty()
                     });
 
+
                     if is_empty.is_some_and(|b| b) {
                         self.right_map.remove(right);
+                        self.right_values.remove(*right);
                     }
                 });
+                
+                self.left_values.remove(left);
+
                 Some(right_set)
             }
             None => None,
