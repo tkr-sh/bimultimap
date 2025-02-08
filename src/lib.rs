@@ -2,51 +2,35 @@
 #![feature(gen_blocks)]
 #![feature(impl_trait_in_assoc_type)]
 
-use std::{cell::OnceCell, hash::Hash, ops::Deref};
-use core::hash::BuildHasher;
+use std::{hash::Hash, ops::Deref, borrow::Borrow};
 
-use hashbrown::DefaultHashBuilder;
 #[cfg(feature = "hashbrown")]
 use hashbrown::{HashMap, HashSet};
 
-type LeftHash = u64;
-type RightHash = u64;
+type Rc<T> = std::sync::Arc<T>;
 
 #[derive(Default)]
-pub struct BiMultiMap<L: Hash + Eq, R: Hash + Eq> {
-    left_values: HashMap<LeftHash, L>,
-    right_values: HashMap<RightHash, R>,
-    left_map: HashMap<LeftHash, HashSet<RightHash>>,
-    right_map: HashMap<RightHash, HashSet<LeftHash>>,
-    hasher: OnceCell<DefaultHashBuilder>,
+pub struct BiMultiMap<'a, L: Hash + Eq, R: Hash + Eq> {
+    left_map_rc: HashMap<Rc<L>, HashSet<Rc<R>>>,
+    right_map_rc: HashMap<Rc<R>, HashSet<Rc<L>>>,
+    left_map_ref: HashMap<&'a L, HashSet<&'a R>>,
+    right_map_ref: HashMap<&'a R, HashSet<&'a L>>,
 }
 
-impl<L: Eq + Hash, R: Eq + Hash> BiMultiMap<L, R> {
-    fn hash_one<T: Hash>(&self, value: T) -> u64 {
-        let hasher = self.hasher.get_or_init(|| DefaultHashBuilder::default());
-
-        hasher.hash_one(value)
-    }
-}
-
-impl<L, R> IntoIterator for  BiMultiMap<L, R> 
+impl<'a, L, R> IntoIterator for  BiMultiMap<'a, L, R> 
     where
-        L: Hash + Eq + Clone + 'static,
-        R: Hash + Eq + Clone + 'static,
+        L: Hash + Eq + Clone + 'a,
+        R: Hash + Eq + Clone + 'a,
 {
-    type Item = (L, R);
-    type IntoIter = impl Iterator<Item = (L, R)>;
+    type Item = (Rc<L>, Rc<R>);
+    type IntoIter = impl Iterator<Item = (Rc<L>, Rc<R>)>;
 
     fn into_iter(self) -> Self::IntoIter {
         gen move {
-             let left_map_ptr = &self.left_map as *const _;
-
-            for (&left, rights) in unsafe { &*left_map_ptr }  {
-                for &right in rights {
-                    let left = self.left_by_hash_unchecked(left).to_owned();
-                    let right = self.right_by_hash_unchecked(right).to_owned();
+            for (left, rights) in self.left_map_rc {
+                for right in rights {
                     yield (
-                        left, right
+                        left.clone(), right
                     );
                 }
             }
@@ -54,32 +38,24 @@ impl<L, R> IntoIterator for  BiMultiMap<L, R>
     }
 }
 
-impl<'a, L: Hash + Eq, R: Hash + Eq> BiMultiMap<L, R> {
-    pub fn new() -> BiMultiMap<L, R> {
+impl<'a, L: Hash + Eq, R: Hash + Eq> BiMultiMap<'a, L, R> {
+    pub fn new() -> BiMultiMap<'a, L, R> {
         BiMultiMap {
-            left_values: HashMap::new(),
-            right_values: HashMap::new(),
-            left_map: HashMap::new(),
-            right_map: HashMap::new(),
-            hasher: OnceCell::new(),
+            left_map_ref: HashMap::new(),
+            right_map_ref: HashMap::new(),
+            left_map_rc: HashMap::new(),
+            right_map_rc: HashMap::new(),
         }
     }
 
     pub fn iter(&self) -> impl Iterator<Item = (&L, &R)> {
         gen {
-            for (left, rights) in self.left_map.iter() {
+            for (left, rights) in self.left_map_rc.iter() {
                 for right in rights {
-                    yield (self.left_by_hash_unchecked(*left), self.right_by_hash_unchecked(*right));
+                    yield (&*left.borrow(), &*right.borrow());
                 }
             }
         }.into_iter()
-    }
-
-    fn left_by_hash_unchecked(&self, hash: u64) -> &L {
-        unsafe { self.left_values.get(&hash).unwrap_unchecked() }
-    }
-    fn right_by_hash_unchecked(&self, hash: u64) -> &R {
-        unsafe { self.right_values.get(&hash).unwrap_unchecked() }
     }
 
     /// Inserts a (L, R) in the [BiMultiMap]
@@ -124,26 +100,18 @@ impl<'a, L: Hash + Eq, R: Hash + Eq> BiMultiMap<L, R> {
         //     .or_insert_with(|| HashSet::from_iter([right_ref]));
     }
 
-    pub fn get_left(&self, left: &L) -> Option<HashSet<&R>> {
-        self.left_map.get(
-            &self.hash_one(left)
-        ).map(|map| map.iter().map(|c| self.right_by_hash_unchecked(*c)).collect())
+    pub fn get_left(&self, left: &L) -> Option<&HashSet<&R>> {
+        self.left_map_ref.get(
+            left
+        )
     }
 
-    pub fn get_left_len(&self, left: &L) -> Option<usize> {
-        self.left_map.get(
-            &self.hash_one(left)
-        ).map(|map| map.len())
-    }
     // pub fn get_right(&self, right: &R) -> Option<&HashSet<&L>> {
     //     self.right_map.get(right)
     // }
 
     pub fn get_one_left(&self, left: &L) -> Option<&R> {
-        self.left_map.get(
-            &self.hash_one(left)
-        ).and_then(|map| map.iter().next()).map(|c|
-         self.right_by_hash_unchecked(*c))
+        self.get_left(left).and_then(|e| e.iter().next()).map(Deref::deref)
         // self.get_left(left).and_then(|rights| rights.iter().next()).map(|v| *v)
     }
     // pub fn get_one_right(&self, right: &R) -> Option<&L> {
@@ -158,9 +126,10 @@ impl<'a, L: Hash + Eq, R: Hash + Eq> BiMultiMap<L, R> {
     // }
 
     pub fn get_left_vec(&self, left: &L) -> Option<Vec<&R>> {
-        self.left_map.get(
-            &self.hash_one(left)
-        ).map(|map| map.iter().map(|c| self.right_by_hash_unchecked(*c)).collect())
+        // self.left_map.get(
+        //     &self.hash_one(left)
+        // ).map(|map| map.iter().map(|c| self.right_by_hash_unchecked(*c)).collect())
+        todo!()
     }
     // pub fn get_right_vec(&self, right: &R) -> Option<Vec<&L>> {
     //     self.get_right(right)
