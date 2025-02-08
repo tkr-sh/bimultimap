@@ -10,17 +10,15 @@ use hashbrown::{HashMap, HashSet};
 type Rc<T> = std::sync::Arc<T>;
 
 #[derive(Default)]
-pub struct BiMultiMap<'a, L: Hash + Eq, R: Hash + Eq> {
+pub struct BiMultiMap<L: Hash + Eq, R: Hash + Eq> {
     left_map_rc: HashMap<Rc<L>, HashSet<Rc<R>>>,
     right_map_rc: HashMap<Rc<R>, HashSet<Rc<L>>>,
-    left_map_ref: HashMap<&'a L, HashSet<&'a R>>,
-    right_map_ref: HashMap<&'a R, HashSet<&'a L>>,
 }
 
-impl<'a, L, R> IntoIterator for  BiMultiMap<'a, L, R> 
+impl<L, R> IntoIterator for  BiMultiMap<L, R> 
     where
-        L: Hash + Eq + Clone + 'a,
-        R: Hash + Eq + Clone + 'a,
+        L: Hash + Eq + Clone,
+        R: Hash + Eq + Clone,
 {
     type Item = (Rc<L>, Rc<R>);
     type IntoIter = impl Iterator<Item = (Rc<L>, Rc<R>)>;
@@ -38,11 +36,9 @@ impl<'a, L, R> IntoIterator for  BiMultiMap<'a, L, R>
     }
 }
 
-impl<'a, L: Hash + Eq, R: Hash + Eq> BiMultiMap<'a, L, R> {
-    pub fn new() -> BiMultiMap<'a, L, R> {
+impl<L: Hash + Eq, R: Hash + Eq> BiMultiMap<L, R> {
+    pub fn new() -> BiMultiMap<L, R> {
         BiMultiMap {
-            left_map_ref: HashMap::new(),
-            right_map_ref: HashMap::new(),
             left_map_rc: HashMap::new(),
             right_map_rc: HashMap::new(),
         }
@@ -60,55 +56,29 @@ impl<'a, L: Hash + Eq, R: Hash + Eq> BiMultiMap<'a, L, R> {
 
     /// Inserts a (L, R) in the [BiMultiMap]
     pub fn insert<'l>(&'l mut self, left: L, right: R) {
-        // let left_ref = self.left_values.get_or_insert(left);
-        // // INSERT AND AFTER THAT GET REFERENCE OF SELF
-        // // let uwu = if let Some(uwu) = self.right_values.get(&right) {
-        // //     uwu
-        // // } else {
-        // //     unsafe { self.right_values.insert_unique_unchecked(right) }
-        // //
-        // // };
-        // // let iter = &self.right_values.iter();
-        // self.right_values.insert(right);
-        // let right_keys = self.right_map.keys().collect::<HashSet<_>>();
-        // if let Some(right_value_ref) = self.right_values.iter().find(|right_value| !right_keys.contains(right_value)) {
-        //     drop(right_keys);
-        //     self.right_map
-        //         .entry(right_value_ref)
-        //         .and_modify(|left_set| {
-        //             left_set.insert(left_ref);
-        //         })
-        //     .or_insert_with(|| HashSet::from_iter([left_ref]));
-        // }
+        let left_rc = Rc::new(left);
+        let right_rc = Rc::new(right);
 
-        // let right_ref = self.right_values.difference(iter.collect());
+        self
+            .right_map_rc
+            .entry(right_rc.clone())
+            .and_modify(|left_set| {
+                left_set.insert(left_rc.clone());
+            })
+            .or_insert_with(|| HashSet::from_iter([left_rc.clone()]));
 
-        // if let Some(ok) = right_ref {
-        //
-        // }
-
-        //     .and_modify(|left_set| {
-        //         left_set.insert(left_ref);
-        //     })
-        //     .or_insert_with(|| HashSet::from_iter([left_ref]));
-
-        // self.left_map
-        //     .entry(left_ref)
-        //     .and_modify(|right_set| {
-        //         right_set.insert(right_ref);
-        //     })
-        //     .or_insert_with(|| HashSet::from_iter([right_ref]));
+        self
+            .left_map_rc
+            .entry(left_rc.clone())
+            .and_modify(|right_set| {
+                right_set.insert(right_rc.clone());
+            })
+            .or_insert_with(|| HashSet::from_iter([right_rc.clone()]));
     }
 
-    pub fn get_left(&self, left: &L) -> Option<&HashSet<&R>> {
-        self.left_map_ref.get(
-            left
-        )
+    pub fn get_left(&self, left: &L) -> Option<&HashSet<Rc<R>>> {
+        self.left_map_rc.get(left)
     }
-
-    // pub fn get_right(&self, right: &R) -> Option<&HashSet<&L>> {
-    //     self.right_map.get(right)
-    // }
 
     pub fn get_one_left(&self, left: &L) -> Option<&R> {
         self.get_left(left).and_then(|e| e.iter().next()).map(Deref::deref)
@@ -139,8 +109,7 @@ impl<'a, L: Hash + Eq, R: Hash + Eq> BiMultiMap<'a, L, R> {
     /// Remove an existing mapping between Left and Right.
     ///
     /// Returns whether the mapping was removed.
-    pub fn remove<'x, 'y>(&mut self, left: &'x L, right: &'y R) -> bool
-    where 'x: 'a, 'y: 'a{
+    pub fn remove<'x, 'y>(&mut self, left: &'x L, right: &'y R) -> bool {
         // let can_be_removed = (self.get_left(&left).is_some_and(|right_set| right_set.contains(right))
         // ) && (self.get_right(&right) .is_some_and(|left_set| left_set.contains(left)));
         //
@@ -172,7 +141,7 @@ impl<'a, L: Hash + Eq, R: Hash + Eq> BiMultiMap<'a, L, R> {
         true
     }
 
-    pub fn remove_left(&mut self, left: &'a L) -> Option<HashSet<&'a R>> {
+    pub fn remove_left(&mut self, left: &L) -> Option<HashSet<&R>> {
         // match self.left_map.remove(left) {
         //     Some(right_set) => {
         //         right_set.iter().for_each(|right| {
