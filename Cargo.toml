@@ -8,6 +8,7 @@ default = ["hashbrown"]
 hashbrown = ["dep:hashbrown"]
 hashmap = []
 btreemap = []
+thread-safe = []
 
 [dependencies]
 hashbrown = { optional = true, version = "0.15" }
