@@ -138,7 +138,7 @@ mod iter {
 
     #[test]
     pub fn no_value() {
-        let mut map = BiMultiMap::<String, String>::new();
+        let map = BiMultiMap::<String, String>::new();
 
         let mut imap = map.iter();
 

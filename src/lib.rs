@@ -36,7 +36,7 @@ impl<L, R> IntoIterator for  BiMultiMap<L, R>
                     );
                 }
             }
-        }.into_iter()
+        }
     }
 }
 
@@ -55,7 +55,7 @@ impl<L: Hash + Eq, R: Hash + Eq> BiMultiMap<L, R> {
                     yield (left, right);
                 }
             }
-        }.into_iter()
+        }
     }
 
     pub fn iter_ref(&self) -> impl Iterator<Item = (&L, &R)> {
@@ -65,12 +65,12 @@ impl<L: Hash + Eq, R: Hash + Eq> BiMultiMap<L, R> {
                     yield (left.borrow(), right.borrow());
                 }
             }
-        }.into_iter()
+        }
     }
 
 
     /// Inserts a (L, R) in the [BiMultiMap]
-    pub fn insert<'l>(&'l mut self, left: L, right: R) {
+    pub fn insert(&mut self, left: L, right: R) {
         let left_rc = Rc::new(left);
         let right_rc = Rc::new(right);
 
@@ -127,11 +127,11 @@ impl<L: Hash + Eq, R: Hash + Eq> BiMultiMap<L, R> {
         let right = right.borrow();
 
         let can_be_removed =
-                self.get_left(&left).is_some_and(|right_set| right_set.contains(right)) &&
+                self.get_left(left).is_some_and(|right_set| right_set.contains(right)) &&
                 self.get_right(right).is_some_and(|left_set| left_set.contains(left));
 
         if can_be_removed {
-            let should_remove_left = self.get_mut_left(&left).map(|right_set| {
+            let should_remove_left = self.get_mut_left(left).map(|right_set| {
                 right_set.remove(right);
                 right_set.is_empty()
             });
