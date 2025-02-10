@@ -13,7 +13,7 @@ pub type Rc<T> = std::sync::Arc<T>;
 #[cfg(not(feature = "thread-safe"))]
 pub type Rc<T> = std::rc::Rc<T>;
 
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct BiMultiMap<L: Hash + Eq, R: Hash + Eq> {
     left_map_rc: HashMap<Rc<L>, HashSet<Rc<R>>>,
     right_map_rc: HashMap<Rc<R>, HashSet<Rc<L>>>,
@@ -48,15 +48,26 @@ impl<L: Hash + Eq, R: Hash + Eq> BiMultiMap<L, R> {
         }
     }
 
-    pub fn iter(&self) -> impl Iterator<Item = (&L, &R)> {
+    pub fn iter(&self) -> impl Iterator<Item = (&Rc<L>, &Rc<R>)> {
         gen {
             for (left, rights) in self.left_map_rc.iter() {
                 for right in rights {
-                    yield (&*left.borrow(), &*right.borrow());
+                    yield (left, right);
                 }
             }
         }.into_iter()
     }
+
+    pub fn iter_ref(&self) -> impl Iterator<Item = (&L, &R)> {
+        gen {
+            for (left, rights) in self.left_map_rc.iter() {
+                for right in rights {
+                    yield (left.borrow(), right.borrow());
+                }
+            }
+        }.into_iter()
+    }
+
 
     /// Inserts a (L, R) in the [BiMultiMap]
     pub fn insert<'l>(&'l mut self, left: L, right: R) {
@@ -89,11 +100,10 @@ impl<L: Hash + Eq, R: Hash + Eq> BiMultiMap<L, R> {
 
     pub fn get_one_left(&self, left: &L) -> Option<&R> {
         self.get_left(left).and_then(|e| e.iter().next()).map(Deref::deref)
-        // self.get_left(left).and_then(|rights| rights.iter().next()).map(|v| *v)
     }
-    // pub fn get_one_right(&self, right: &R) -> Option<&L> {
-    //     self.get_right(right).and_then(|lefts| lefts.iter().next()).map(|v| *v)
-    // }
+    pub fn get_one_right(&self, right: &R) -> Option<&L> {
+        self.get_right(right).and_then(|e| e.iter().next()).map(Deref::deref)
+    }
 
     fn get_mut_left(&mut self, left: &L) -> Option<&mut HashSet<Rc<R>>> {
         self.left_map_rc.get_mut(left)
@@ -105,10 +115,9 @@ impl<L: Hash + Eq, R: Hash + Eq> BiMultiMap<L, R> {
     pub fn get_left_vec(&self, left: &L) -> Option<Vec<&R>> {
         self.left_map_rc.get(left).map(|map| map.iter().map(Deref::deref).collect())
     }
-    // pub fn get_right_vec(&self, right: &R) -> Option<Vec<&L>> {
-    //     self.get_right(right)
-    //         .map(|set| set.iter().map(Deref::deref).collect::<Vec<_>>())
-    // }
+    pub fn get_right_vec(&self, right: &R) -> Option<Vec<&L>> {
+        self.right_map_rc.get(right).map(|map| map.iter().map(Deref::deref).collect())
+    }
 
     /// Remove an existing mapping between Left and Right.
     ///
@@ -146,7 +155,8 @@ impl<L: Hash + Eq, R: Hash + Eq> BiMultiMap<L, R> {
         }
     }
 
-    pub fn remove_left(&mut self, left: &L) -> Option<HashSet<Rc<R>>> {
+    pub fn remove_left<LeftRef: Borrow<L>>(&mut self, left: LeftRef) -> Option<HashSet<Rc<R>>> {
+        let left = left.borrow();
         match self.left_map_rc.remove(left) {
             Some(right_set) => {
                 right_set.iter().for_each(|right| {
@@ -163,6 +173,28 @@ impl<L: Hash + Eq, R: Hash + Eq> BiMultiMap<L, R> {
                 });
                 
                 Some(right_set)
+            }
+            None => None,
+        }
+    }
+    pub fn remove_right<RightRef: Borrow<R>>(&mut self, right: RightRef) -> Option<HashSet<Rc<L>>> {
+        let right = right.borrow();
+        match self.right_map_rc.remove(right) {
+            Some(left_set) => {
+                left_set.iter().for_each(|left| {
+                    let is_empty = self.get_mut_left(left).map(|hashet_right| {
+                        hashet_right.remove(right);
+
+                        hashet_right.is_empty()
+                    });
+
+
+                    if is_empty.is_some_and(|b| b) {
+                        self.left_map_rc.remove(left);
+                    }
+                });
+                
+                Some(left_set)
             }
             None => None,
         }
