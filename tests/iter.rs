@@ -1,6 +1,5 @@
 mod into_iter {
-    use bimultimap::BiMultiMap;
-    use bimultimap::Rc;
+    use bimultimap::{BiMultiMap, Rc};
 
     #[test]
     pub fn basic() {
@@ -117,9 +116,10 @@ mod iter_ref {
 }
 
 mod iter {
-    use std::{hash::Hash, sync::Mutex};
-
-    use bimultimap::{BiMultiMap, Rc};
+    use {
+        bimultimap::{BiMultiMap, Rc},
+        std::{hash::Hash, sync::Mutex},
+    };
     #[test]
     pub fn basic() {
         let mut map = BiMultiMap::new();

@@ -1,5 +1,7 @@
-use bimultimap::{BiMultiMap, Rc};
-use hashbrown::HashSet;
+use {
+    bimultimap::{BiMultiMap, Rc},
+    hashbrown::HashSet,
+};
 
 #[test]
 pub fn basic_insert() {
