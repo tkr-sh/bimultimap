@@ -6,10 +6,11 @@ right:
     sed -i 's/Right/Left/g' src/right.rs
     sed -i 's/__Temporary/Right/g' src/right.rs
 
-
     sed -i 's/left/__temporary/g' src/right.rs
     sed -i 's/right/left/g' src/right.rs
     sed -i 's/__temporary/right/g' src/right.rs
+
+    cargo +nightly fmt
 
 
 

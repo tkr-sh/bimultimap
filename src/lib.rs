@@ -41,14 +41,15 @@ where
     }
 }
 
-impl<L, R> FromIterator<(L,R)> for BiMultiMap<L, R>
+impl<L, R> FromIterator<(L, R)> for BiMultiMap<L, R>
 where
     L: Hash + Eq,
     R: Hash + Eq,
 {
-    fn from_iter<T: IntoIterator<Item = (L,R)>>(iter: T) -> Self {
+    fn from_iter<T: IntoIterator<Item = (L, R)>>(iter: T) -> Self {
         let mut map = BiMultiMap::new();
-        iter.into_iter().for_each(|(left, right)| map.insert(left, right));
+        iter.into_iter()
+            .for_each(|(left, right)| map.insert(left, right));
         map
     }
 }
@@ -101,7 +102,6 @@ impl<L: Hash + Eq, R: Hash + Eq> BiMultiMap<L, R> {
             .or_insert_with(|| HashSet::from_iter([right_rc.clone()]));
     }
 
-
     pub fn get_right(&self, right: &R) -> Option<&HashSet<Rc<L>>> {
         self.right_map_rc.get(right)
     }
@@ -121,7 +121,6 @@ impl<L: Hash + Eq, R: Hash + Eq> BiMultiMap<L, R> {
             .get(right)
             .map(|map| map.iter().map(Deref::deref).collect())
     }
-
 
     /// Remove an existing mapping between Left and Right.
     ///
@@ -211,13 +210,13 @@ impl<L: Hash + Eq, R: Hash + Eq> BiMultiMap<L, R> {
                         left_set.insert(left_rc);
                     }
                 }
-            }
+            },
             None => {
                 let rc_values: HashSet<_> = left_values.into_iter().map(Rc::new).collect();
                 let rc_values_cloned = rc_values.clone();
                 self.right_map_rc.insert(right_key.clone(), rc_values);
                 to_add_as_value_of_left.extend(rc_values_cloned);
-            }
+            },
         }
 
         for left_key in to_add_as_value_of_left {
@@ -240,7 +239,11 @@ impl<L: Hash + Eq, R: Hash + Eq> BiMultiMap<L, R> {
                     right_set.remove(&right_key);
                 });
 
-            if self.left_map_rc.get(&left_key).is_some_and(|right_set| right_set.is_empty()) {
+            if self
+                .left_map_rc
+                .get(&left_key)
+                .is_some_and(|right_set| right_set.is_empty())
+            {
                 self.left_map_rc.remove(&left_key);
             }
         }
