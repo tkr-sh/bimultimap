@@ -4,7 +4,7 @@ use {
     std::{borrow::Borrow, hash::Hash, ops::Deref},
 };
 
-impl<RightType: Hash + Eq, LeftType: Hash + Eq> BiMultiMap<RightType, LeftType> {
+impl<RightType: Hash + Eq, LeftType: Hash + Eq> BiMultiMap<LeftType, RightType> {
     pub fn get_right(&self, right: &RightType) -> Option<&HashSet<Rc<LeftType>>> {
         self.right_map_rc.get(right)
     }
@@ -15,7 +15,10 @@ impl<RightType: Hash + Eq, LeftType: Hash + Eq> BiMultiMap<RightType, LeftType> 
             .map(Deref::deref)
     }
 
-    pub(crate) fn get_mut_right(&mut self, right: &RightType) -> Option<&mut HashSet<Rc<LeftType>>> {
+    pub(crate) fn get_mut_right(
+        &mut self,
+        right: &RightType,
+    ) -> Option<&mut HashSet<Rc<LeftType>>> {
         self.right_map_rc.get_mut(right)
     }
 

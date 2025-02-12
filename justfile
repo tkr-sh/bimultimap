@@ -10,6 +10,8 @@ right:
     sed -i 's/right/left/g' src/right.rs
     sed -i 's/__temporary/right/g' src/right.rs
 
+    sed -i 's/BiMultiMap<RightType, LeftType>/BiMultiMap<LeftType, RightType>/g' src/right.rs
+
     cargo +nightly fmt
 
 
