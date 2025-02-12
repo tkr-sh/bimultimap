@@ -120,6 +120,7 @@ mod iter {
         bimultimap::{BiMultiMap, Rc},
         std::{hash::Hash, sync::Mutex},
     };
+
     #[test]
     pub fn basic() {
         let mut map = BiMultiMap::new();
@@ -212,5 +213,52 @@ mod iter {
 
         println!("{:#?}", map);
         assert!(map.iter().any(|(l, _)| *l.0.lock().unwrap() == 10))
+    }
+}
+
+mod from_iter {
+    use {
+        bimultimap::{BiMultiMap, Rc},
+        hashbrown::HashSet,
+    };
+
+    #[test]
+    fn one_iter() {
+        let map = BiMultiMap::from_iter([(0, 1)]);
+
+        assert_eq!(map.get_right(&1), Some(&HashSet::from([Rc::new(0)])));
+        assert_eq!(map.get_left(&0), Some(&HashSet::from([Rc::new(1)])));
+    }
+
+    #[test]
+    fn multiple_iter() {
+        let map = BiMultiMap::from_iter([(0, 1), (1, 2), (2, 1), (1, 1)]);
+
+        assert_eq!(map.get_left(&0), Some(&HashSet::from([Rc::new(1)])));
+        assert_eq!(
+            map.get_left(&1),
+            Some(&HashSet::from([Rc::new(1), Rc::new(2)]))
+        );
+        assert_eq!(map.get_left(&2), Some(&HashSet::from([Rc::new(1)])));
+
+        assert_eq!(
+            map.get_right(&1),
+            Some(&HashSet::from([Rc::new(0), Rc::new(1), Rc::new(2)]))
+        );
+        assert_eq!(map.get_right(&2), Some(&HashSet::from([Rc::new(1)])));
+    }
+
+    #[test]
+    fn reverse_left_right() {
+        let map = BiMultiMap::from_iter([(0, 1)].into_iter().map(|(a, b)| (b, a)));
+        assert_eq!(map.get_left(&1), Some(&HashSet::from([Rc::new(0)])));
+        assert_eq!(map.get_right(&0), Some(&HashSet::from([Rc::new(1)])));
+    }
+
+    #[test]
+    fn repeating() {
+        let map = BiMultiMap::from_iter([(0, 0), (0, 0)]);
+        assert_eq!(map.get_left(&0), Some(&HashSet::from([Rc::new(0)])));
+        assert_eq!(map.get_right(&0), Some(&HashSet::from([Rc::new(0)])));
     }
 }
