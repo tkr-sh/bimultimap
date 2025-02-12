@@ -261,4 +261,18 @@ mod from_iter {
         assert_eq!(map.get_left(&0), Some(&HashSet::from([Rc::new(0)])));
         assert_eq!(map.get_right(&0), Some(&HashSet::from([Rc::new(0)])));
     }
+
+    #[test]
+    fn lot_of_values() {
+        const ITERS: u32 = 10_000;
+        let map = BiMultiMap::from_iter((0..ITERS).map(|v| (v, v)));
+
+        let mut imap = map.iter();
+
+        for _ in 0..ITERS {
+            assert!(imap.next().is_some());
+        }
+
+        assert!(imap.next().is_none());
+    }
 }
