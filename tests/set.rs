@@ -1,8 +1,5 @@
 mod set_left {
-    use {
-        bimultimap::{BiMultiMap, Rc},
-        hashbrown::HashSet,
-    };
+    use bimultimap::{BiMultiMap, HashSet, Rc};
 
     #[test]
     pub fn basic() {
@@ -63,10 +60,7 @@ mod set_left {
 }
 
 mod set_right {
-    use {
-        bimultimap::{BiMultiMap, Rc},
-        hashbrown::HashSet,
-    };
+    use bimultimap::{BiMultiMap, HashSet, Rc};
 
     #[test]
     pub fn basic() {

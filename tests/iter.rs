@@ -217,10 +217,7 @@ mod iter {
 }
 
 mod from_iter {
-    use {
-        bimultimap::{BiMultiMap, Rc},
-        hashbrown::HashSet,
-    };
+    use bimultimap::{BiMultiMap, HashSet, Rc};
 
     #[test]
     fn one_iter() {

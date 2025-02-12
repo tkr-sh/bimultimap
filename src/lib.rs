@@ -7,6 +7,8 @@ mod right;
 
 use std::{borrow::Borrow, hash::Hash};
 
+#[cfg(feature = "hashmap")]
+pub use std::collections::{HashMap, HashSet};
 #[cfg(feature = "hashbrown")]
 pub use hashbrown::{HashMap, HashSet};
 

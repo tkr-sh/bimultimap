@@ -1,8 +1,5 @@
 mod remove_right_and_left {
-    use {
-        bimultimap::{BiMultiMap, Rc},
-        hashbrown::HashSet,
-    };
+    use bimultimap::{BiMultiMap, HashSet, Rc};
 
     #[test]
     pub fn basic_remove() {
@@ -70,10 +67,7 @@ mod remove_right_and_left {
 }
 
 mod remove_left {
-    use {
-        bimultimap::{BiMultiMap, Rc},
-        hashbrown::HashSet,
-    };
+    use bimultimap::{BiMultiMap, HashSet, Rc};
 
     #[test]
     pub fn basic_remove() {
