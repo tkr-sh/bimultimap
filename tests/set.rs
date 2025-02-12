@@ -22,7 +22,7 @@ mod set_left {
     pub fn setting_already_existing_values() {
         let mut map = BiMultiMap::<i32, i32>::new();
 
-        map.insert(0.into(), 4.into());
+        map.insert(0, 4);
         map.set_left(0.into(), [1, 2, 3].into());
 
         assert_eq!(
@@ -41,10 +41,10 @@ mod set_left {
     pub fn multiple_both_side_keys() {
         let mut map = BiMultiMap::<i32, i32>::new();
 
-        map.insert(0.into(), 2.into());
-        map.insert(0.into(), 3.into());
-        map.insert(1.into(), 2.into());
-        map.insert(1.into(), 3.into());
+        map.insert(0, 2);
+        map.insert(0, 3);
+        map.insert(1, 2);
+        map.insert(1, 3);
         map.set_left(0.into(), [4].into());
 
         assert_eq!(map.get_left(&0), Some(&HashSet::from([Rc::new(4)])));
@@ -83,7 +83,7 @@ mod set_right {
     pub fn setting_already_existing_values() {
         let mut map = BiMultiMap::<i32, i32>::new();
 
-        map.insert(4.into(), 0.into());
+        map.insert(4, 0);
         map.set_right(0.into(), [1, 2, 3].into());
 
         assert_eq!(
@@ -102,10 +102,10 @@ mod set_right {
     pub fn multiple_both_side_keys() {
         let mut map = BiMultiMap::<i32, i32>::new();
 
-        map.insert(2.into(), 0.into());
-        map.insert(3.into(), 0.into());
-        map.insert(2.into(), 1.into());
-        map.insert(3.into(), 1.into());
+        map.insert(2, 0);
+        map.insert(3, 0);
+        map.insert(2, 1);
+        map.insert(3, 1);
         map.set_right(0.into(), [4].into());
 
         assert_eq!(map.get_right(&0), Some(&HashSet::from([Rc::new(4)])));
