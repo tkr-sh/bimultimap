@@ -1,30 +1,33 @@
 use {
-    crate::{BiMultiMap, HashMap, HashSet, Rc},
+    crate::{BiMultiMap, HashSet, Rc},
     std::{borrow::Borrow, hash::Hash, ops::Deref},
 };
 
-impl<L: Hash + Eq, R: Hash + Eq> BiMultiMap<L, R> {
-    pub fn get_left(&self, left: &L) -> Option<&HashSet<Rc<R>>> {
+impl<LeftType: Hash + Eq, RightType: Hash + Eq> BiMultiMap<LeftType, RightType> {
+    pub fn get_left(&self, left: &LeftType) -> Option<&HashSet<Rc<RightType>>> {
         self.left_map_rc.get(left)
     }
 
-    pub fn get_one_left(&self, left: &L) -> Option<&R> {
+    pub fn get_one_left(&self, left: &LeftType) -> Option<&RightType> {
         self.get_left(left)
             .and_then(|e| e.iter().next())
             .map(Deref::deref)
     }
 
-    pub(crate) fn get_mut_left(&mut self, left: &L) -> Option<&mut HashSet<Rc<R>>> {
+    pub(crate) fn get_mut_left(&mut self, left: &LeftType) -> Option<&mut HashSet<Rc<RightType>>> {
         self.left_map_rc.get_mut(left)
     }
 
-    pub fn get_left_vec(&self, left: &L) -> Option<Vec<&R>> {
+    pub fn get_left_vec(&self, left: &LeftType) -> Option<Vec<&RightType>> {
         self.left_map_rc
             .get(left)
             .map(|map| map.iter().map(Deref::deref).collect())
     }
 
-    pub fn remove_left<LeftRef: Borrow<L>>(&mut self, left: LeftRef) -> Option<HashSet<Rc<R>>> {
+    pub fn remove_left<LeftRef: Borrow<LeftType>>(
+        &mut self,
+        left: LeftRef,
+    ) -> Option<HashSet<Rc<RightType>>> {
         let left = left.borrow();
         match self.left_map_rc.remove(left) {
             Some(right_set) => {
@@ -51,7 +54,7 @@ impl<L: Hash + Eq, R: Hash + Eq> BiMultiMap<L, R> {
     ///
     /// The argument passed is an [Rc] for the `left_key`, since it might be inserted as a value
     /// for all the right_values that are in `right_values` but not present in the [`BiMultiMap`]
-    pub fn set_left(&mut self, left_key: Rc<L>, right_values: HashSet<R>) {
+    pub fn set_left(&mut self, left_key: Rc<LeftType>, right_values: HashSet<RightType>) {
         // These 2 declarations, demonstrate perfectly what this function does.
         //
         // We have on one side what Ill call `bmm_right_values` (BiMultiMapRightValues) and
