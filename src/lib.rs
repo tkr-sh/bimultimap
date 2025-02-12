@@ -5,7 +5,7 @@
 mod left;
 mod right;
 
-use std::{borrow::Borrow, hash::Hash, ops::Deref};
+use std::{borrow::Borrow, hash::Hash};
 
 #[cfg(feature = "hashbrown")]
 pub use hashbrown::{HashMap, HashSet};
