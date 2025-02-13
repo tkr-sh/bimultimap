@@ -127,4 +127,12 @@ impl<LeftType: Hash + Eq, RightType: Hash + Eq> BiMultiMap<LeftType, RightType> 
             }
         }
     }
+
+    pub fn left_entry(
+        &mut self,
+        left_entry: Rc<LeftType>,
+    ) -> std::collections::hash_map::Entry<'_, std::rc::Rc<LeftType>, HashSet<std::rc::Rc<RightType>>>
+    {
+        self.left_map_rc.entry(left_entry)
+    }
 }

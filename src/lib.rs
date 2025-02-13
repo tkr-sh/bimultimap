@@ -8,9 +8,9 @@ mod right;
 use std::{borrow::Borrow, hash::Hash};
 
 #[cfg(feature = "hashmap")]
-pub use std::collections::{HashMap, HashSet};
+pub use std::collections::{HashMap, HashSet, hash_map::Entry};
 #[cfg(feature = "hashbrown")]
-pub use hashbrown::{HashMap, HashSet};
+pub use hashbrown::{HashMap, HashSet, hash_map::Entry};
 
 /// The reference counting type returned by the map
 #[cfg(feature = "thread-safe")]

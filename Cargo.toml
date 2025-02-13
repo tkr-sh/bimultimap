@@ -11,11 +11,16 @@ exclude = ["LICENSE.md"]
 
 
 [features]
-default = ["hashbrown"]
+default = ["hashmap"]
+
 hashbrown = ["dep:hashbrown"]
 hashmap = []
 btreemap = []
+
 thread-safe = []
+
+serde = []
+
 
 [dependencies]
 hashbrown = { optional = true, version = "0.15" }
