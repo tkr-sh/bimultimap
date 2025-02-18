@@ -1,10 +1,10 @@
 use {
     crate::BiMultiMap,
     serde::{
-        Deserialize,
-        Serialize,
         de::{MapAccess, Visitor},
         ser::SerializeMap,
+        Deserialize,
+        Serialize,
     },
     std::{borrow::Borrow, hash::Hash, marker::PhantomData},
 };
@@ -18,7 +18,7 @@ where
     where
         S: serde::Serializer,
     {
-        let mut seq = serializer.serialize_map(None)?;
+        let mut seq = serializer.serialize_map(Some(self.len()))?;
         for (left, right) in self.iter() {
             seq.serialize_entry(left.borrow() as &L, right.borrow() as &R)?;
         }
