@@ -1,3 +1,4 @@
+#[cfg(feature = "serde")]
 mod deser {
     use bimultimap::BiMultiMap;
 
@@ -37,6 +38,7 @@ mod deser {
     }
 }
 
+#[cfg(feature = "serde")]
 mod ser {
     use bimultimap::BiMultiMap;
 

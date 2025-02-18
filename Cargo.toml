@@ -11,7 +11,7 @@ exclude = ["LICENSE.md"]
 
 
 [features]
-default = ["hashmap", "serde"]
+default = ["hashmap"]
 
 hashbrown = ["dep:hashbrown"]
 hashmap = []
