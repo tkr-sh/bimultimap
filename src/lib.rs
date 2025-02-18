@@ -24,6 +24,7 @@ pub type Rc<T> = std::rc::Rc<T>;
 pub struct BiMultiMap<L: Hash + Eq, R: Hash + Eq> {
     left_map_rc:  HashMap<Rc<L>, HashSet<Rc<R>>>,
     right_map_rc: HashMap<Rc<R>, HashSet<Rc<L>>>,
+    len:          usize,
 }
 
 impl<L, R> IntoIterator for BiMultiMap<L, R>
@@ -64,6 +65,7 @@ impl<L: Hash + Eq, R: Hash + Eq> BiMultiMap<L, R> {
         BiMultiMap {
             left_map_rc:  HashMap::new(),
             right_map_rc: HashMap::new(),
+            len:          0usize,
         }
     }
 
@@ -87,24 +89,41 @@ impl<L: Hash + Eq, R: Hash + Eq> BiMultiMap<L, R> {
         }
     }
 
+    /// Represents how many unique mappings there are
+    pub fn len(&self) -> usize {
+        self.len
+    }
+
     /// Inserts a (L, R) in the [BiMultiMap]
     pub fn insert(&mut self, left: L, right: R) {
         let left_rc = Rc::new(left);
         let right_rc = Rc::new(right);
 
+        let mut was_added = false;
+
         self.right_map_rc
             .entry(right_rc.clone())
             .and_modify(|left_set| {
-                left_set.insert(left_rc.clone());
+                was_added |= left_set.insert(left_rc.clone());
             })
-            .or_insert_with(|| HashSet::from_iter([left_rc.clone()]));
+            .or_insert_with(|| {
+                was_added = true;
+                HashSet::from_iter([left_rc.clone()])
+            });
 
         self.left_map_rc
             .entry(left_rc.clone())
             .and_modify(|right_set| {
-                right_set.insert(right_rc.clone());
+                was_added |= right_set.insert(right_rc.clone());
             })
-            .or_insert_with(|| HashSet::from_iter([right_rc.clone()]));
+            .or_insert_with(|| {
+                was_added = true;
+                HashSet::from_iter([right_rc.clone()])
+            });
+
+        if was_added {
+            self.len += 1;
+        }
     }
 
     /// Remove an existing mapping between Left and Right.
@@ -123,6 +142,10 @@ impl<L: Hash + Eq, R: Hash + Eq> BiMultiMap<L, R> {
             .is_some_and(|right_set| right_set.contains(right)) &&
             self.get_right(right)
                 .is_some_and(|left_set| left_set.contains(left));
+
+        if can_be_removed {
+            self.len -= 1;
+        }
 
         if can_be_removed {
             let should_remove_left = self.get_mut_left(left).map(|right_set| {

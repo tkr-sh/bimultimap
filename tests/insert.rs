@@ -6,7 +6,8 @@ pub fn basic_insert() {
 
     map.insert("a", "b");
 
-    assert_eq!(map.get_left(&"a"), Some(&HashSet::from([Rc::new("b")])))
+    assert_eq!(map.get_left(&"a"), Some(&HashSet::from([Rc::new("b")])));
+    assert_eq!(map.len(), 1)
 }
 
 #[test]
@@ -31,6 +32,7 @@ pub fn multiple_left_insert() {
             Rc::new("d"),
         ]))
     );
+    assert_eq!(map.len(), 4)
 }
 
 #[test]
@@ -55,6 +57,7 @@ pub fn multiple_right_insert() {
             Rc::new("d"),
         ]))
     );
+    assert_eq!(map.len(), 4)
 }
 
 #[test]
@@ -82,6 +85,7 @@ pub fn multiple_insert_right_and_left() {
         map.get_left(&"a"),
         Some(&HashSet::from([Rc::new("a"), Rc::new("b")]))
     );
+    assert_eq!(map.len(), 4)
 }
 
 #[test]
@@ -94,4 +98,5 @@ pub fn same_value_insert() {
     map.insert("a", "a");
 
     assert_eq!(map.get_right(&"a"), Some(&HashSet::from([Rc::new("a")])));
+    assert_eq!(map.len(), 1)
 }

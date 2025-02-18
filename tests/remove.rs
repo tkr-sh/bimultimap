@@ -10,6 +10,7 @@ mod remove_right_and_left {
 
         assert_eq!(map.get_left(&"a"), None);
         assert_eq!(map.get_right(&"b"), None);
+        assert_eq!(map.len(), 0);
     }
 
     #[test]
@@ -21,6 +22,7 @@ mod remove_right_and_left {
         map.remove("a", "b");
 
         assert_eq!(map.get_left(&"a"), Some(&HashSet::from([Rc::new("c")])));
+        assert_eq!(map.len(), 1);
     }
 
     #[test]
@@ -39,6 +41,7 @@ mod remove_right_and_left {
             map.get_left(&"a"),
             Some(&HashSet::from([Rc::new("c"), Rc::new("e")]))
         );
+        assert_eq!(map.len(), 2);
     }
 
     #[test]
@@ -54,6 +57,7 @@ mod remove_right_and_left {
             map.get_left(&"a"),
             Some(&HashSet::from([Rc::new("b"), Rc::new("c")]))
         );
+        assert_eq!(map.len(), 4);
 
         map.remove("a", "b");
         map.remove("a", "c");
@@ -63,6 +67,7 @@ mod remove_right_and_left {
             map.get_left(&"b"),
             Some(&HashSet::from([Rc::new("b"), Rc::new("c")]))
         );
+        assert_eq!(map.len(), 2);
     }
 }
 
@@ -76,11 +81,13 @@ mod remove_left {
         map.insert("a", "b");
         assert_eq!(map.get_one_left(&"a"), Some(&"b"));
         assert_eq!(map.get_one_right(&"b"), Some(&"a"));
+        assert_eq!(map.len(), 1);
 
         let removed = map.remove_left("a");
 
         assert_eq!(removed, Some(HashSet::from([Rc::new("b")])));
 
+        assert_eq!(map.len(), 0);
         assert_eq!(map.get_left(&"a"), None);
         assert_eq!(map.get_right(&"b"), None);
     }
@@ -95,7 +102,7 @@ mod remove_left {
         let removed = map.remove_left("a");
 
         assert_eq!(removed, Some(HashSet::from([Rc::new("b"), Rc::new("c")])));
-
+        assert_eq!(map.len(), 0);
         assert_eq!(map.get_left(&"a"), None);
     }
 
@@ -118,6 +125,8 @@ mod remove_left {
             map.get_left(&"b"),
             Some(&HashSet::from([Rc::new("b"), Rc::new("c")]))
         );
+
+        assert_eq!(map.len(), 2);
     }
 
     #[test]
@@ -128,6 +137,7 @@ mod remove_left {
         map.insert("b", "_");
         map.insert("c", "_");
 
-        assert_eq!(map.remove_left("d"), None)
+        assert_eq!(map.remove_left("d"), None);
+        assert_eq!(map.len(), 3);
     }
 }
