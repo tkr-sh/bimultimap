@@ -4,6 +4,8 @@
 
 mod left;
 mod right;
+#[cfg(feature = "serde")]
+mod serde;
 
 use std::{borrow::Borrow, hash::Hash};
 
@@ -18,7 +20,7 @@ pub type Rc<T> = std::sync::Arc<T>;
 #[cfg(not(feature = "thread-safe"))]
 pub type Rc<T> = std::rc::Rc<T>;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, PartialEq, Eq, Clone)]
 pub struct BiMultiMap<L: Hash + Eq, R: Hash + Eq> {
     left_map_rc:  HashMap<Rc<L>, HashSet<Rc<R>>>,
     right_map_rc: HashMap<Rc<R>, HashSet<Rc<L>>>,
@@ -147,3 +149,4 @@ impl<L: Hash + Eq, R: Hash + Eq> BiMultiMap<L, R> {
         }
     }
 }
+

@@ -11,7 +11,7 @@ exclude = ["LICENSE.md"]
 
 
 [features]
-default = ["hashmap"]
+default = ["hashmap", "serde"]
 
 hashbrown = ["dep:hashbrown"]
 hashmap = []
@@ -19,8 +19,12 @@ btreemap = []
 
 thread-safe = []
 
-serde = []
+serde = ["dep:serde"]
 
 
 [dependencies]
 hashbrown = { optional = true, version = "0.15" }
+serde = { optional = true, version = "1.0" }
+
+[dev-dependencies]
+serde_json = "1.0"
