@@ -1,7 +1,7 @@
 //! This is a generated file! Don't modify it!!!
 use {
     crate::{BiMultiMap, HashSet, Rc},
-    std::{borrow::Borrow, hash::Hash, ops::Deref},
+    std::{borrow::Borrow, collections::hash_map::Keys, hash::Hash, ops::Deref},
 };
 
 impl<RightType: Hash + Eq, LeftType: Hash + Eq> BiMultiMap<LeftType, RightType> {
@@ -131,4 +131,16 @@ impl<RightType: Hash + Eq, LeftType: Hash + Eq> BiMultiMap<LeftType, RightType> 
             }
         }
     }
+
+    pub fn right_values(&self) -> Keys<Rc<RightType>, HashSet<Rc<LeftType>>> {
+        self.right_map_rc.keys()
+    }
+
+    // pub fn right_entry(
+    //     &mut self,
+    //     right_entry: Rc<RightType>,
+    // ) -> std::collections::hash_map::Entry<'_, std::rc::Rc<RightType>, HashSet<std::rc::Rc<LeftType>>>
+    // {
+    //     self.right_map_rc.entry(right_entry)
+    // }
 }

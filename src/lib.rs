@@ -7,10 +7,10 @@ mod right;
 #[cfg(feature = "serde")]
 mod serde;
 
-use std::{borrow::Borrow, hash::Hash};
-
 #[cfg(feature = "hashmap")]
 pub use std::collections::{HashMap, HashSet, hash_map::Entry};
+use std::{borrow::Borrow, hash::Hash};
+
 #[cfg(feature = "hashbrown")]
 pub use hashbrown::{HashMap, HashSet, hash_map::Entry};
 
@@ -149,4 +149,3 @@ impl<L: Hash + Eq, R: Hash + Eq> BiMultiMap<L, R> {
         }
     }
 }
-

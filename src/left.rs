@@ -1,6 +1,6 @@
 use {
     crate::{BiMultiMap, HashSet, Rc},
-    std::{borrow::Borrow, hash::Hash, ops::Deref},
+    std::{borrow::Borrow, collections::hash_map::Keys, hash::Hash, ops::Deref},
 };
 
 impl<LeftType: Hash + Eq, RightType: Hash + Eq> BiMultiMap<LeftType, RightType> {
@@ -128,11 +128,15 @@ impl<LeftType: Hash + Eq, RightType: Hash + Eq> BiMultiMap<LeftType, RightType> 
         }
     }
 
-    pub fn left_entry(
-        &mut self,
-        left_entry: Rc<LeftType>,
-    ) -> std::collections::hash_map::Entry<'_, std::rc::Rc<LeftType>, HashSet<std::rc::Rc<RightType>>>
-    {
-        self.left_map_rc.entry(left_entry)
+    pub fn left_values(&self) -> Keys<Rc<LeftType>, HashSet<Rc<RightType>>> {
+        self.left_map_rc.keys()
     }
+
+    // pub fn left_entry(
+    //     &mut self,
+    //     left_entry: Rc<LeftType>,
+    // ) -> std::collections::hash_map::Entry<'_, std::rc::Rc<LeftType>, HashSet<std::rc::Rc<RightType>>>
+    // {
+    //     self.left_map_rc.entry(left_entry)
+    // }
 }
