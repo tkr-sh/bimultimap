@@ -225,6 +225,7 @@ mod from_iter {
 
         assert_eq!(map.get_right(&1), Some(&HashSet::from([Rc::new(0)])));
         assert_eq!(map.get_left(&0), Some(&HashSet::from([Rc::new(1)])));
+        assert_eq!(map.len(), 1);
     }
 
     #[test]
@@ -243,6 +244,7 @@ mod from_iter {
             Some(&HashSet::from([Rc::new(0), Rc::new(1), Rc::new(2)]))
         );
         assert_eq!(map.get_right(&2), Some(&HashSet::from([Rc::new(1)])));
+        assert_eq!(map.len(), 4);
     }
 
     #[test]
@@ -250,6 +252,7 @@ mod from_iter {
         let map = BiMultiMap::from_iter([(0, 1)].into_iter().map(|(a, b)| (b, a)));
         assert_eq!(map.get_left(&1), Some(&HashSet::from([Rc::new(0)])));
         assert_eq!(map.get_right(&0), Some(&HashSet::from([Rc::new(1)])));
+        assert_eq!(map.len(), 1);
     }
 
     #[test]
@@ -257,12 +260,15 @@ mod from_iter {
         let map = BiMultiMap::from_iter([(0, 0), (0, 0)]);
         assert_eq!(map.get_left(&0), Some(&HashSet::from([Rc::new(0)])));
         assert_eq!(map.get_right(&0), Some(&HashSet::from([Rc::new(0)])));
+        assert_eq!(map.len(), 1);
     }
 
     #[test]
     fn lot_of_values() {
         const ITERS: u32 = 10_000;
         let map = BiMultiMap::from_iter((0..ITERS).map(|v| (v, v)));
+
+        assert_eq!(map.len(), ITERS as usize);
 
         let mut imap = map.iter();
 
