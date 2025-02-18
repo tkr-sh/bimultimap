@@ -89,7 +89,19 @@ impl<L: Hash + Eq, R: Hash + Eq> BiMultiMap<L, R> {
         }
     }
 
-    /// Represents how many unique mappings there are
+    /// Represents the number of how many unique mappings there are
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let map = bimultimap::BiMultiMap::from_iter([
+    ///     ('a', 0), 
+    ///     ('a', 1), 
+    ///     ('b', 1), 
+    /// ]);
+    ///
+    /// assert_eq!(map.len(), 3);
+    /// ```
     pub fn len(&self) -> usize {
         self.len
     }
