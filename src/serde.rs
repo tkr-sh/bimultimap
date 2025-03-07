@@ -1,10 +1,10 @@
 use {
     crate::BiMultiMap,
     serde::{
-        de::{MapAccess, Visitor},
-        ser::SerializeMap,
         Deserialize,
         Serialize,
+        de::{MapAccess, Visitor},
+        ser::SerializeMap,
     },
     std::{borrow::Borrow, hash::Hash, marker::PhantomData},
 };

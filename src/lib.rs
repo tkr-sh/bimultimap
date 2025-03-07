@@ -95,9 +95,9 @@ impl<L: Hash + Eq, R: Hash + Eq> BiMultiMap<L, R> {
     ///
     /// ```
     /// let map = bimultimap::BiMultiMap::from_iter([
-    ///     ('a', 0), 
-    ///     ('a', 1), 
-    ///     ('b', 1), 
+    ///     ('a', 0),
+    ///     ('a', 1),
+    ///     ('b', 1),
     /// ]);
     ///
     /// assert_eq!(map.len(), 3);

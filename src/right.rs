@@ -42,6 +42,8 @@ impl<RightType: Hash + Eq, LeftType: Hash + Eq> BiMultiMap<LeftType, RightType> 
                         hashet_right.is_empty()
                     });
 
+                    self.len -= 1;
+
                     if is_empty.is_some_and(|b| b) {
                         self.left_map_rc.remove(left);
                     }
