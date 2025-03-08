@@ -21,10 +21,13 @@ thread-safe = []
 
 serde = ["dep:serde"]
 
+mlua = ["dep:mlua"]
+
 
 [dependencies]
 hashbrown = { optional = true, version = "0.15" }
 serde = { optional = true, version = "1.0" }
+mlua = { optional = true, version = "0.10", features = ["lua54"]}
 
 [dev-dependencies]
 serde_json = "1.0"

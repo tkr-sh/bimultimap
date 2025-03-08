@@ -3,6 +3,8 @@
 #![feature(impl_trait_in_assoc_type)]
 
 mod left;
+#[cfg(feature = "mlua")]
+mod mlua;
 mod right;
 #[cfg(feature = "serde")]
 mod serde;

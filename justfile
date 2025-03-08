@@ -14,10 +14,8 @@ right:
 
     cargo +nightly fmt
 
-
-
 test:
-    cargo nextest run
+    ruby features
 
 run:
     cargo run
